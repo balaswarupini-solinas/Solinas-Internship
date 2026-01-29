@@ -1,0 +1,130 @@
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
+int main()
+{
+    // ---------- GLFW INIT ----------
+    if (!glfwInit())
+        return -1;
+
+    GLFWwindow* window = glfwCreateWindow(400, 500, "Simple ImGui Calculator", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+    glewInit();
+    glfwSwapInterval(1); // vsync
+
+    // ---------- IMGUI INIT ----------
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
+
+    // ---------- CALCULATOR STATE ----------
+    double display = 0;
+    double stored = 0;
+    char op = 0;
+    bool newInput = true;
+
+    // ---------- MAIN LOOP ----------
+    while (!glfwWindowShouldClose(window))
+    {
+        glfwPollEvents();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // ---------- UI ----------
+        ImGui::SetNextWindowSize(ImVec2(360, 440), ImGuiCond_Always);
+        ImGui::Begin("Calculator", NULL,
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoCollapse);
+
+        ImGui::Text(" ");
+        ImGui::Text("%.0f", display);
+        ImGui::Separator();
+
+        ImVec2 btn(70, 60);
+
+        // ---- Row 1 ----
+        if (ImGui::Button("7", btn)) { if (newInput) { display = 7; newInput = false; } else display = display * 10 + 7; }
+        ImGui::SameLine();
+        if (ImGui::Button("8", btn)) { if (newInput) { display = 8; newInput = false; } else display = display * 10 + 8; }
+        ImGui::SameLine();
+        if (ImGui::Button("9", btn)) { if (newInput) { display = 9; newInput = false; } else display = display * 10 + 9; }
+        ImGui::SameLine();
+        if (ImGui::Button("+", btn)) { stored = display; op = '+'; newInput = true; }
+
+        // ---- Row 2 ----
+        if (ImGui::Button("4", btn)) { if (newInput) { display = 4; newInput = false; } else display = display * 10 + 4; }
+        ImGui::SameLine();
+        if (ImGui::Button("5", btn)) { if (newInput) { display = 5; newInput = false; } else display = display * 10 + 5; }
+        ImGui::SameLine();
+        if (ImGui::Button("6", btn)) { if (newInput) { display = 6; newInput = false; } else display = display * 10 + 6; }
+        ImGui::SameLine();
+        if (ImGui::Button("-", btn)) { stored = display; op = '-'; newInput = true; }
+
+        // ---- Row 3 ----
+        if (ImGui::Button("1", btn)) { if (newInput) { display = 1; newInput = false; } else display = display * 10 + 1; }
+        ImGui::SameLine();
+        if (ImGui::Button("2", btn)) { if (newInput) { display = 2; newInput = false; } else display = display * 10 + 2; }
+        ImGui::SameLine();
+        if (ImGui::Button("3", btn)) { if (newInput) { display = 3; newInput = false; } else display = display * 10 + 3; }
+        ImGui::SameLine();
+        if (ImGui::Button("*", btn)) { stored = display; op = '*'; newInput = true; }
+
+        // ---- Row 4 ----
+        if (ImGui::Button("0", btn)) { if (newInput) { display = 0; newInput = false; } else display = display * 10; }
+        ImGui::SameLine();
+        if (ImGui::Button("=", btn))
+        {
+            if (op == '+') display = stored + display;
+            if (op == '-') display = stored - display;
+            if (op == '*') display = stored * display;
+            if (op == '/') display = (display != 0) ? stored / display : 0;
+
+            newInput = true;
+            op = 0;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("/", btn)) { stored = display; op = '/'; newInput = true; }
+
+        // ---- Clear ----
+        if (ImGui::Button("C", ImVec2(230, 40)))
+        {
+            display = 0;
+            stored = 0;
+            op = 0;
+            newInput = true;
+        }
+
+        ImGui::End();
+
+        // ---------- RENDER ----------
+        ImGui::Render();
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(window);
+    }
+
+    // ---------- CLEANUP ----------
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
+    return 0;
+}
