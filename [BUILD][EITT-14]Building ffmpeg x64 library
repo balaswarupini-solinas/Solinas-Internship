@@ -1,0 +1,69 @@
+FFmpeg x64 Build Steps
+1. Environment Setup
+Install MSYS2
+
+Open MSYS2 MinGW64 shell (mandatory)
+
+Update packages:
+
+pacman -Syu
+
+restart shell if prompted
+
+pacman -Syu
+
+2. Install Dependencies
+pacman -S --needed \
+mingw-w64-x86_64-toolchain \
+mingw-w64-x86_64-nasm \
+mingw-w64-x86_64-yasm \
+mingw-w64-x86_64-cmake \
+git make pkg-config
+
+3. Fetch FFmpeg Source
+cd ~
+git clone https://git.ffmpeg.org/ffmpeg.git
+cd ffmpeg
+git checkout n6.1
+
+4. Configure (x64)
+Static build
+
+./configure \
+--prefix=/mingw64 \
+--arch=x86_64 \
+--target-os=mingw32 \
+--enable-gpl \
+--enable-version3 \
+--enable-static \
+--disable-shared \
+--disable-debug
+
+OR Shared (DLL) build
+
+./configure \
+--prefix=/mingw64 \
+--arch=x86_64 \
+--target-os=mingw32 \
+--enable-gpl \
+--enable-version3 \
+--enable-shared \
+--disable-static \
+--disable-debug
+
+5. Compile
+make -j$(nproc)
+
+6. Install
+make install
+
+Artifacts installed to:
+
+/mingw64/bin
+/mingw64/lib
+/mingw64/include
+
+7. Verification
+ffmpeg -version
+
+ffmpeg -buildconf
